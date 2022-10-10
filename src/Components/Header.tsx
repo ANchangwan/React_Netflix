@@ -1,16 +1,15 @@
 import { Link, useMatch } from "react-router-dom";
 import styled from "styled-components";
-import { motion } from "framer-motion";
-import { useState } from "react";
+import { motion, useAnimation, useViewportScroll } from "framer-motion";
+import { useEffect, useState } from "react";
 
-const Nav = styled.nav`
+const Nav = styled(motion.nav)`
   display: flex;
   justify-content: space-between;
   align-items: center;
   position: fixed;
   width: 100%;
   top: 0;
-  background-color: black;
   font-size: 14px;
   padding: 20px 60px;
   color: white;
@@ -74,8 +73,15 @@ const Circle = styled(motion.span)`
 
 const Input = styled(motion.input)`
   transform-origin: right center;
+  color: white;
+  border: solid 1px ${(props) => props.theme.white.lighter};
+  background-color: transparent;
   position: absolute;
-  left: -200px;
+  right: -15px;
+  z-index: -1;
+  padding-left: 40px;
+  padding: 5px 40px;
+  font-size: 16px;
 `;
 
 const logoVariants = {
@@ -83,13 +89,37 @@ const logoVariants = {
   active: { fillOpacity: [0, 1, 0], transition: { repeat: Infinity } },
 };
 
+const navVariants = {
+  up: { backgroundColor: "rgba(0,0,0,0)" },
+  scoll: { backgroundColor: "rgba(0,0,0,1)" },
+};
+
 function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const homeMatch = useMatch("/");
   const tvMatch = useMatch("tv");
-  const toggleSearch = () => setSearchOpen((props) => !props);
+  const inputAnimation = useAnimation();
+  const navAnimation = useAnimation();
+  const { scrollY } = useViewportScroll();
+  const toggleSearch = () => {
+    if (searchOpen) {
+      inputAnimation.start({ scaleX: 0 });
+    } else {
+      inputAnimation.start({ scaleX: 1 });
+    }
+    setSearchOpen((props) => !props);
+  };
+  useEffect(() => {
+    scrollY.onChange(() => {
+      if (scrollY.get() > 80) {
+        navAnimation.start("scroll");
+      } else {
+        navAnimation.start("up");
+      }
+    });
+  }, [scrollY]);
   return (
-    <Nav>
+    <Nav variants={navVariants} animate={navAnimation} initial={"up"}>
       <Col>
         <Logo
           variants={logoVariants}
@@ -135,10 +165,9 @@ function Header() {
             ></path>
           </motion.svg>
           <Input
+            animate={inputAnimation}
+            initial={{ scaleX: 0 }}
             transition={{ type: "linear" }}
-            animate={{
-              scaleX: searchOpen ? 1 : 0,
-            }}
             placeholder="제목, 사람, 장르"
           />
         </Search>
