@@ -97,7 +97,7 @@ const navVariants = {
 function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const bigMovieMatch = useMatch("/movies/:movieId");
-  console.log(bigMovieMatch);
+
   const homeMatch = useMatch("/");
   const tvMatch = useMatch("tv");
   const inputAnimation = useAnimation();
